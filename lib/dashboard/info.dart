@@ -12,7 +12,8 @@ class InfoPage extends StatelessWidget {
           children: [
             const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 12),
-            Text('Disalin: $text'),
+            Expanded(child:Text('Disalin: $text', overflow: TextOverflow.ellipsis,
+            ),)
           ],
         ),
         backgroundColor: Colors.teal,
@@ -62,26 +63,27 @@ class InfoPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Column(
+                    const     Expanded(
+                          child:Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                    Text(
                           'Tentang Aplikasi',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                          ),
+                          ), overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           'Informasi & Bantuan',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
-                          ),
+                          ),overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ),
+                    ),)
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -261,7 +263,8 @@ class InfoPage extends StatelessWidget {
             child: Icon(icon, color: Colors.white, size: 32),
           ),
           const SizedBox(width: 16),
-          Column(
+              Expanded(
+                          child:Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -270,17 +273,17 @@ class InfoPage extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                ),
+                ),overflow: TextOverflow.ellipsis,
               ),
               Text(
                 subtitle,
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
-                ),
+                ),overflow: TextOverflow.ellipsis,
               ),
             ],
-          ),
+          ),)
         ],
       ),
     );
@@ -378,17 +381,19 @@ class InfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDeveloperCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.teal.withOpacity(0.1), Colors.transparent],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.teal.withOpacity(0.3)),
+ Widget _buildDeveloperCard(BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.teal.withOpacity(0.1), Colors.transparent],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.teal.withOpacity(0.3)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -407,39 +412,66 @@ class InfoPage extends StatelessWidget {
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
-          textAlign: TextAlign.center, // opsional tambahan
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
-        Text(
+        const Text(
           'Flutter Developer',
           style: TextStyle(
             color: Colors.white70,
             fontSize: 14,
           ),
-          textAlign: TextAlign.center, // opsional juga
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildContactButton(
-              context,
-              icon: Icons.email,
-              label: 'Email',
-              value: 'dev@keuanganku.com',
-            ),
-            const SizedBox(width: 12),
-            _buildContactButton(
-              context,
-              icon: Icons.code,
-              label: 'GitHub',
-              value: 'https://github.com/Rafliarjunapratama',
-            ),
-          ],
+        // Menggunakan LayoutBuilder untuk deteksi ukuran
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Jika lebar kurang dari 180, gunakan Column
+            if (constraints.maxWidth < 180) {
+              return Column(
+                children: [
+                  _buildContactButton(
+                    context,
+                    icon: Icons.email,
+                    label: 'Email',
+                    value: 'dev@keuanganku.com',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildContactButton(
+                    context,
+                    icon: Icons.code,
+                    label: 'GitHub',
+                    value: 'https://github.com/Rafliarjunapratama',
+                  ),
+                ],
+              );
+            }
+            // Jika lebar cukup, gunakan Row
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildContactButton(
+                  context,
+                  icon: Icons.email,
+                  label: 'Email',
+                  value: 'dev@keuanganku.com',
+                ),
+                const SizedBox(width: 12),
+                _buildContactButton(
+                  context,
+                  icon: Icons.code,
+                  label: 'GitHub',
+                  value: 'https://github.com/Rafliarjunapratama',
+                ),
+              ],
+            );
+          },
         ),
-      ]),
-    );
-  }
+      ],
+    ),
+  );
+}
 
   Widget _buildContactButton(
     BuildContext context, {

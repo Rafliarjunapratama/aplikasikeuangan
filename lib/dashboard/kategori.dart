@@ -99,156 +99,163 @@ class _CategoriesPageState extends State<CategoriesPage> {
     return icons[category] ?? Icons.category;
   }
 
-  void _showCategoryDetail(String categoryName, CategoryData data) {
-    final categoryTransactions =
-        transactions.where((t) => t['category'] == categoryName).toList();
+void _showCategoryDetail(String categoryName, CategoryData data) {
+  final categoryTransactions =
+      transactions.where((t) => t['category'] == categoryName).toList();
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xff1a1f1d),
-              const Color(0xff101413),
-            ],
-          ),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) => Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xff1a1f1d), Color(0xff101413)],
         ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 20),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: _getCategoryColor(categoryName).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _getCategoryIcon(categoryName),
-                      color: _getCategoryColor(categoryName),
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          categoryName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${data.transactionCount} transaksi',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    'Rp ${NumberFormat('#,###').format(data.totalAmount)}',
-                    style: TextStyle(
-                      color: data.isIncome ? Colors.teal : Colors.red,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Transaction list
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: categoryTransactions.length,
-                separatorBuilder: (context, index) => Divider(
-                  color: Colors.white.withOpacity(0.1),
-                  height: 1,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: SingleChildScrollView( // <-- scrollable
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 20),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                itemBuilder: (context, index) {
-                  final transaction = categoryTransactions[index];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: transaction['isIncome']
-                            ? Colors.teal.withOpacity(0.2)
-                            : Colors.red.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
+                        color: _getCategoryColor(categoryName).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        transaction['isIncome']
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color:
-                            transaction['isIncome'] ? Colors.teal : Colors.red,
-                        size: 20,
+                        _getCategoryIcon(categoryName),
+                        color: _getCategoryColor(categoryName),
+                        size: 28,
                       ),
                     ),
-                    title: Text(
-                      transaction['title'],
+                    const SizedBox(height: 16),
+                    Text(
+                      categoryName,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      transaction['date'],
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                    trailing: Text(
-                      '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
-                      style: TextStyle(
-                        color:
-                            transaction['isIncome'] ? Colors.teal : Colors.red,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${data.transactionCount} transaksi',
+                      style: const TextStyle(
+                        color: Colors.white70,
                         fontSize: 14,
                       ),
                     ),
-                  );
-                },
+                    const SizedBox(height: 12),
+                    Text(
+                      'Rp ${NumberFormat('#,###').format(data.totalAmount)}',
+                      style: TextStyle(
+                        color: data.isIncome ? Colors.teal : Colors.red,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 24),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      itemCount: categoryTransactions.length,
+                      separatorBuilder: (context, index) => Divider(
+                        color: Colors.white.withOpacity(0.1),
+                        height: 1,
+                      ),
+                      itemBuilder: (context, index) {
+                        final transaction = categoryTransactions[index];
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 4),
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: transaction['isIncome']
+                                  ? Colors.teal.withOpacity(0.2)
+                                  : Colors.red.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              transaction['isIncome']
+                                  ? Icons.arrow_upward
+                                  : Icons.arrow_downward,
+                              color: transaction['isIncome']
+                                  ? Colors.teal
+                                  : Colors.red,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            transaction['title'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            transaction['date'],
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          trailing: SizedBox(
+                            width: 120,
+                            child: Text(
+                              '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
+                              style: TextStyle(
+                                color: transaction['isIncome']
+                                    ? Colors.teal
+                                    : Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -260,11 +267,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xff101413),
-            Color(0xff1a1f1d),
-            Color(0xff0f1412),
-          ],
+          colors: [Color(0xff101413), Color(0xff1a1f1d), Color(0xff0f1412)],
         ),
       ),
       child: SafeArea(
@@ -274,7 +277,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
               )
             : Column(
                 children: [
-                  // Header
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Row(
@@ -294,65 +296,79 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Kategori',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Kategori',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            Text(
-                              'Lihat pengeluaran per kategori',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
+                              Text(
+                                'Lihat pengeluaran per kategori',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  // Category list
                   Expanded(
                     child: categoriesData.isEmpty
                         ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(40),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.category_outlined,
-                                    color: Colors.white70,
-                                    size: 60,
-                                  ),
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(40),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.05),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.category_outlined,
+                                        color: Colors.white70,
+                                        size: 60,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    const Text(
+                                      'Belum ada kategori',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 32),
+                                      child: Text(
+                                        'Tambah transaksi untuk melihat kategori',
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 20),
-                                const Text(
-                                  'Belum ada kategori',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Tambah transaksi untuk melihat kategori',
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           )
                         : ListView.builder(
@@ -382,72 +398,183 @@ class _CategoriesPageState extends State<CategoriesPage> {
                                         color: Colors.white.withOpacity(0.1),
                                       ),
                                     ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                _getCategoryColor(categoryName)
-                                                    .withOpacity(0.2),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Icon(
-                                            _getCategoryIcon(categoryName),
-                                            color:
-                                                _getCategoryColor(categoryName),
-                                            size: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        // Jika lebar kurang dari 350px, gunakan Column
+                                        if (constraints.maxWidth < 350) {
+                                          return Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                categoryName,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(12),
+                                                    decoration: BoxDecoration(
+                                                      color: _getCategoryColor(
+                                                              categoryName)
+                                                          .withOpacity(0.2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                    ),
+                                                    child: Icon(
+                                                      _getCategoryIcon(
+                                                          categoryName),
+                                                      color: _getCategoryColor(
+                                                          categoryName),
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          categoryName,
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(
+                                                          '${categoryData.transactionCount} transaksi',
+                                                          style:
+                                                              const TextStyle(
+                                                            color:
+                                                                Colors.white70,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                '${categoryData.transactionCount} transaksi',
-                                                style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontSize: 12,
-                                                ),
+                                              const SizedBox(height: 12),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Rp ${NumberFormat('#,###').format(categoryData.totalAmount)}',
+                                                      style: TextStyle(
+                                                        color: categoryData
+                                                                .isIncome
+                                                            ? Colors.teal
+                                                            : Colors.red,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  const Icon(
+                                                    Icons.chevron_right,
+                                                    color: Colors.white54,
+                                                    size: 20,
+                                                  ),
+                                                ],
                                               ),
                                             ],
-                                          ),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                                          );
+                                        }
+
+                                        // Jika lebar cukup, gunakan Row seperti biasa
+                                        return Row(
                                           children: [
-                                            Text(
-                                              'Rp ${NumberFormat('#,###').format(categoryData.totalAmount)}',
-                                              style: TextStyle(
-                                                color: categoryData.isIncome
-                                                    ? Colors.teal
-                                                    : Colors.red,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: _getCategoryColor(
+                                                        categoryName)
+                                                    .withOpacity(0.2),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Icon(
+                                                _getCategoryIcon(categoryName),
+                                                color: _getCategoryColor(
+                                                    categoryName),
+                                                size: 24,
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
-                                            Icon(
-                                              Icons.chevron_right,
-                                              color: Colors.white54,
-                                              size: 20,
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    categoryName,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    '${categoryData.transactionCount} transaksi',
+                                                    style: const TextStyle(
+                                                      color: Colors.white70,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Flexible(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  Text(
+                                                    'Rp ${NumberFormat('#,###').format(categoryData.totalAmount)}',
+                                                    style: TextStyle(
+                                                      color: categoryData.isIncome
+                                                          ? Colors.teal
+                                                          : Colors.red,
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    textAlign: TextAlign.right,
+                                                    maxLines: 1,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  const Icon(
+                                                    Icons.chevron_right,
+                                                    color: Colors.white54,
+                                                    size: 20,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
-                                        ),
-                                      ],
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),

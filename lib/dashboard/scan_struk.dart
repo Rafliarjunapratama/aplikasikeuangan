@@ -125,10 +125,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
             children: [
               const Text('TOTAL',
                   style: TextStyle(fontWeight: FontWeight.bold)),
+                  Flexible(child:
               Text(
                 _parsed['total'] != null ? 'Rp ${_parsed['total']}' : '-',
                 style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              ),),
             ],
           ),
           const SizedBox(height: 10),
@@ -320,68 +321,100 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
     );
   }
 
+  
   Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildActionButton(
-              icon: Icons.camera_alt_outlined,
-              label: 'Camera',
-              color: Colors.teal,
-              onTap: _takePhotoAndScan,
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        // Jika lebar kurang dari 300px, gunakan Column
+        if (constraints.maxWidth < 300) {
+          return Column(
+            children: [
+              _buildActionButton(
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                color: Colors.teal,
+                onTap: _takePhotoAndScan,
+              ),
+              const SizedBox(height: 16),
+              _buildActionButton(
+                icon: Icons.photo_library_outlined,
+                label: 'Gallery',
+                color: Colors.blue,
+                onTap: _pickFromGalleryAndScan,
+              ),
+            ],
+          );
+        }
+        // Jika lebar cukup, gunakan Row
+        return Row(
+          children: [
+            Flexible(
+              child: _buildActionButton(
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                color: Colors.teal,
+                onTap: _takePhotoAndScan,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: _buildActionButton(
-              icon: Icons.photo_library_outlined,
-              label: 'Gallery',
-              color: Colors.blue,
-              onTap: _pickFromGalleryAndScan,
+            const SizedBox(width: 16),
+            Flexible(
+              child: _buildActionButton(
+                icon: Icons.photo_library_outlined,
+                label: 'Gallery',
+                color: Colors.blue,
+                onTap: _pickFromGalleryAndScan,
+              ),
             ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
+Widget _buildActionButton({
+  required IconData icon,
+  required String label,
+  required Color color,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: _isProcessing ? null : onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      height: 70,
+      width: double.infinity, // Penting untuk Column mode
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [color, color.withOpacity(0.8)]),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: _isProcessing ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 70,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [color, color.withOpacity(0.8)]),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const SizedBox(width: 12),
-            Text(label,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildContent() {
     if (_isProcessing) {
@@ -630,7 +663,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen>
           child: GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Disimpan ke Transaksi! ✅')),
+                const SnackBar(content: Expanded(
+        child:Text('Disimpan ke Transaksi! ✅')),)
               );
             },
             child: Container(

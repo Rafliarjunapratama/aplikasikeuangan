@@ -100,40 +100,39 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
   }
 
   Widget _buildLoadingSkeleton() {
-  return Center(
-    child: SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              shape: BoxShape.circle,
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
-          const SizedBox(height: 30),
-          ...List.generate(
-            3,
-            (i) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
+            const SizedBox(height: 30),
+            ...List.generate(
+              3,
+              (i) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildHeader() {
     return Row(
@@ -167,66 +166,92 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
   }
 
   Widget _buildOverviewCard() {
-    final balance = income - expense;
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Colors.white.withOpacity(0.05), Colors.transparent]),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20)
-        ],
-      ),
-      child: Column(
-        children: [
-          const Text('Ringkasan Bulan Ini',
-              style: TextStyle(color: Colors.white70, fontSize: 16)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                  child: _buildStatItem(
-                      Icons.arrow_upward, 'Pemasukan', income, Colors.teal)),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: _buildStatItem(Icons.arrow_downward, 'Pengeluaran',
-                      expense, Colors.red)),
-            ],
+  final balance = income - expense;
+  return Container(
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+          colors: [Colors.white.withOpacity(0.05), Colors.transparent]),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withOpacity(0.1)),
+      boxShadow: [
+        BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20)
+      ],
+    ),
+    child: Column(
+      children: [
+        const Text('Ringkasan Bulan Ini',
+            style: TextStyle(color: Colors.white70, fontSize: 16)),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(
+                child: _buildStatItem(
+                    Icons.arrow_upward, 'Pemasukan', income, Colors.teal)),
+            const SizedBox(width: 16),
+            Expanded(
+                child: _buildStatItem(Icons.arrow_downward, 'Pengeluaran',
+                    expense, Colors.red)),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              balance >= 0 ? Colors.green : Colors.red,
+              Colors.transparent
+            ]),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                balance >= 0 ? Colors.green : Colors.red,
-                Colors.transparent
-              ]),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.account_balance_wallet,
-                    color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Saldo: Rp ${NumberFormat('#,###').format(balance.abs())}',
-                  style: const TextStyle(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.account_balance_wallet,
+                  color: Colors.white, size: 20),
+              const SizedBox(width: 3),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        backgroundColor: Colors.black87,
+                        title: const Text('Saldo Kamu',
+                            style: TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis),
+                        content: Text(
+                          'Rp ${NumberFormat('#,###').format(balance.abs())}',
+                          style: const TextStyle(
+                              color: Colors.tealAccent, fontSize: 20),
+                      
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Saldo: Rp ${NumberFormat('#,###').format(balance.abs())}',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18),
+                      fontSize: 18,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                Text(balance >= 0 ? ' ✅' : ' ❌',
-                    style: const TextStyle(color: Colors.white, fontSize: 18)),
-              ],
-            ),
+              ),
+               Expanded(
+                child:Text(balance >= 0 ? ' ✅' : ' ❌',
+                  style: const TextStyle(color: Colors.white, fontSize: 18),     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,),)
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildStatItem(
       IconData icon, String label, double amount, Color color) {
@@ -243,8 +268,9 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
           const SizedBox(height: 8),
           Text('Rp ${NumberFormat('#,###').format(amount.round())}',
               style: TextStyle(
-                  color: color, fontWeight: FontWeight.bold, fontSize: 16)),
-          Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  color: color, fontWeight: FontWeight.bold, fontSize: 16),
+              overflow: TextOverflow.ellipsis),
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
         ],
       ),
     );
@@ -275,8 +301,6 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
                   fontSize: 20,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-
-          // ✅ Gunakan TweenAnimationBuilder agar animasi smooth tanpa flicker
           TweenAnimationBuilder<double>(
             tween: Tween<double>(begin: 0, end: 1),
             duration: const Duration(milliseconds: 1200),
@@ -297,13 +321,17 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
               );
             },
           ),
-
           const SizedBox(height: 20),
+          // ✅ FIX: Wrap legend dengan Row dan Expanded
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildLegend(Colors.greenAccent, 'Pemasukan', income),
-              _buildLegend(Colors.redAccent, 'Pengeluaran', expense),
+              Expanded(
+                child: _buildLegend(Colors.greenAccent, 'Pemasukan', income),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildLegend(Colors.redAccent, 'Pengeluaran', expense),
+              ),
             ],
           ),
         ],
@@ -356,7 +384,7 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
           ),
           child: Column(
             children: [
-              const Text('6 Transaksi Terakhir',
+              const Text('Transaksi Terakhir',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -377,14 +405,12 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
                           final amount =
                               _lastSixTransactions[groupIndex]['amount'];
                           return BarTooltipItem(
-                            // Teks tooltip
                             'Rp ${NumberFormat('#,###').format(amount)}',
                             const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
-                              backgroundColor: Colors
-                                  .teal, // ✅ diatur langsung di sini (kompatibel!)
+                              backgroundColor: Colors.teal,
                             ),
                           );
                         },
@@ -420,16 +446,12 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
                             final rawDate =
                                 _lastSixTransactions[value.toInt()]['date'];
 
-                            // 🧠 Coba deteksi apakah data masih String
                             late DateTime date;
                             if (rawDate is String) {
-                              // Parse manual (sesuaikan format kamu)
                               try {
-                                // Kalau format seperti "14 Okt 2025"
                                 date = DateFormat("d MMM yyyy", "id_ID")
                                     .parse(rawDate);
                               } catch (_) {
-                                // fallback kalau gagal
                                 date = DateTime.now();
                               }
                             } else {
@@ -464,7 +486,7 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
                     }).toList(),
                   ),
                   swapAnimationDuration: const Duration(milliseconds: 700),
-                  swapAnimationCurve: Curves.easeInOut, // ✅ halus tanpa bounce
+                  swapAnimationCurve: Curves.easeInOut,
                 ),
               )
             ],
@@ -496,29 +518,6 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
     );
   }
 
-  List<BarChartGroupData> _createAnimatedBarGroups(double animValue) {
-    final list = _lastSixTransactions;
-    return List.generate(list.length, (i) {
-      final amount = (list[i]['amount'] as num?)?.toDouble() ?? 0;
-      return BarChartGroupData(
-        x: i,
-        barRods: [
-          BarChartRodData(
-            toY: amount * animValue,
-            width: 20,
-            color: Colors.tealAccent,
-            borderRadius: BorderRadius.circular(8),
-            backDrawRodData: BackgroundBarChartRodData(
-              show: true,
-              toY: _computeMaxY(),
-              color: Colors.white.withOpacity(0.1),
-            ),
-          ),
-        ],
-      );
-    });
-  }
-
   double _computeMaxY() {
     if (_lastSixTransactions.isEmpty) return 100;
     final max = _lastSixTransactions
@@ -527,33 +526,33 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
     return (max * 1.2).clamp(100, double.infinity);
   }
 
-  Widget _bottomTitles(double value, TitleMeta meta) {
-    final idx = value.toInt();
-    if (idx < 0 || idx >= _lastSixTransactions.length)
-      return const SizedBox.shrink();
-    final title = _lastSixTransactions[idx]['title'] as String? ?? 'Tx';
-    final short = title.length > 6 ? '${title.substring(0, 6)}...' : title;
-    return Text(short,
-        style: const TextStyle(color: Colors.white70, fontSize: 11));
-  }
-
+  // ✅ FIX: Legend dengan layout yang lebih baik
   Widget _buildLegend(Color color, String label, double amount) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style: const TextStyle(color: Colors.white, fontSize: 14)),
-            Text('Rp ${NumberFormat('#,###').format(amount.round())}',
-                style: TextStyle(color: Colors.white70, fontSize: 12)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                'Rp ${NumberFormat('#,###').format(amount.round())}',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -586,11 +585,12 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
                       color: Colors.teal, size: 20),
                 ),
                 const SizedBox(width: 12),
-                const Text('Transaksi Terbaru',
+                const Expanded(
+                          child:Text('Transaksi Terbaru',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold),overflow: TextOverflow.ellipsis)),
               ],
             ),
             const SizedBox(height: 16),
@@ -603,6 +603,7 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
     );
   }
 
+  // ✅ FIX: Transaction tile dengan proper overflow handling
   Widget _buildTransactionTile(Map<String, dynamic> transaction) {
     final isIncome = transaction['isIncome'] as bool? ?? false;
     return Padding(
@@ -625,21 +626,31 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(transaction['title'] ?? '',
-                    style: const TextStyle(color: Colors.white, fontSize: 16)),
-                Text('${transaction['category']} • ${transaction['date']}',
-                    style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(
+                  transaction['title'] ?? '',
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '${transaction['category']} • ${transaction['date']}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          Text(
+          const SizedBox(width: 8),
+              Expanded(
+                          child: Text(
             '${isIncome ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
             style: TextStyle(
               color: isIncome ? Colors.green : Colors.red,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
-          ),
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+          ),)
         ],
       ),
     );

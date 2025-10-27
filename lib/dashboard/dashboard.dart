@@ -152,9 +152,11 @@ class _DashboardawalState extends State<Dashboardawal>
         ),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
+          
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
+              
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
@@ -266,78 +268,90 @@ class _DashboardawalState extends State<Dashboardawal>
 
   // ===== NFC FLAZZ SCANNER - PREMIUM VERSION =====
   Future<void> _scanFlazzBalance() async {
-    if (_isScanning) return;
+  if (_isScanning) return;
 
-    HapticFeedback.heavyImpact();
-    setState(() => _isScanning = true);
+  HapticFeedback.heavyImpact();
+  setState(() => _isScanning = true);
 
-    _nfcController.repeat();
-    _showNfcScannerDialog();
+  _nfcController.repeat();
+  _showNfcScannerDialog();
 
-    try {
-      final tag =
-          await FlutterNfcKit.poll(timeout: const Duration(seconds: 10));
+  try {
+    final tag = await FlutterNfcKit.poll(timeout: const Duration(seconds: 10));
 
-      if (tag.type == NFCTagType.iso7816) {
-        final cardId = tag.id;
-        setState(() => _cardId = cardId);
+    if (tag.type == NFCTagType.iso7816) {
+      final cardId = tag.id;
+      setState(() => _cardId = cardId);
 
-        final response = await FlutterNfcKit.transceive('00B0950000');
-        final detectedBalance = _parseFlazzBalance(response);
+      final response = await FlutterNfcKit.transceive('00B0950000');
+      final detectedBalance = _parseFlazzBalance(response);
 
-        _nfcController.stop();
-        await _successController.forward();
-
-        setState(() {
-          totalBalance = detectedBalance;
-          income = detectedBalance;
-          expense = 0;
-          _scanSuccess = true;
-        });
-
-        await _autoSaveFlazzTransaction(detectedBalance, cardId);
-        _balanceController.forward(from: 0);
-        Navigator.of(context).pop();
-        _showSuccessSnackbar(detectedBalance);
-      } else {
-        throw Exception('Kartu bukan Flazz BCA');
-      }
-    } catch (e) {
+      // Berhenti animasi & tampilkan sukses
       _nfcController.stop();
-      _showErrorDialog(e.toString());
-    } finally {
-      if (mounted) setState(() => _isScanning = false);
-      await FlutterNfcKit.finish();
+      await _successController.forward();
+
+      setState(() {
+        totalBalance = detectedBalance;
+        income = detectedBalance;
+        expense = 0;
+        _scanSuccess = true;
+      });
+
+      await _autoSaveFlazzTransaction(detectedBalance, cardId);
+      _balanceController.forward(from: 0);
+
+      if (Navigator.canPop(context)) Navigator.of(context).pop(); // tutup NFC dialog
+      _showSuccessSnackbar(detectedBalance);
+    } else {
+      throw Exception('Kartu bukan Flazz BCA');
     }
+  } catch (e) {
+    // Jika error, pastikan animasi berhenti dan dialog ditutup dulu
+    _nfcController.stop();
+    if (Navigator.canPop(context)) Navigator.of(context).pop();
+
+    // Tampilkan pesan error
+    _showErrorDialog(e.toString());
+  } finally {
+    if (mounted) setState(() => _isScanning = false);
+    await FlutterNfcKit.finish();
   }
+}
 
   void _showNfcScannerDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) => Container(
-            height: 400,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [Colors.black.withOpacity(0.8), Colors.transparent]),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.teal.withOpacity(0.3), width: 1),
-            ),
-            child: Column(
-              children: [
-                Container(
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          // Deteksi tinggi layar
+          final isSmallScreen = constraints.maxHeight < 600;
+
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) => Container(
                   padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Colors.black.withOpacity(0.8), Colors.transparent]),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.teal.withOpacity(0.3), width: 1),
+                  ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Bagian atas
                       Transform.scale(
                         scale: _pulseAnimation.value,
                         child: Container(
-                          width: 100,
-                          height: 100,
+                          width: isSmallScreen ? 80 : 100,
+                          height: isSmallScreen ? 80 : 100,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                                 colors: [Colors.teal, Colors.tealAccent]),
@@ -349,68 +363,70 @@ class _DashboardawalState extends State<Dashboardawal>
                                   spreadRadius: 5),
                             ],
                           ),
-                          child: const Icon(Icons.nfc,
-                              color: Colors.white, size: 50),
+                          child: const Icon(Icons.nfc, color: Colors.white, size: 50),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      const Text('Tap Flazz Card',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Tap Flazz Card',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 8),
-                      Text('Letakkan kartu di belakang HP',
+                      const Text('Letakkan kartu di belakang HP',
                           style: TextStyle(color: Colors.white70)),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AnimatedBuilder(
-                        animation: _pulseAnimation,
-                        builder: (context, child) => Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: Colors.teal.withOpacity(0.4), width: 3),
+
+                      const SizedBox(height: 30),
+
+                      // Bagian animasi tengah
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _pulseAnimation,
+                            builder: (context, child) => Container(
+                              width: isSmallScreen ? 150 : 200,
+                              height: isSmallScreen ? 150 : 200,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.teal.withOpacity(0.4), width: 3),
+                              ),
+                            ),
                           ),
-                        ),
+                          Container(
+                            width: isSmallScreen ? 140 : 180,
+                            height: isSmallScreen ? 100 : 120,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                                Colors.white.withOpacity(0.1),
+                                Colors.transparent
+                              ]),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.teal.withOpacity(0.5)),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.credit_card,
+                                    color: Colors.white70, size: 40),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _isScanning ? 'Scanning...' : 'Ready',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        width: 180,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [
-                            Colors.white.withOpacity(0.1),
-                            Colors.transparent
-                          ]),
-                          borderRadius: BorderRadius.circular(16),
-                          border:
-                              Border.all(color: Colors.teal.withOpacity(0.5)),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.credit_card,
-                                color: Colors.white70, size: 40),
-                            const SizedBox(height: 8),
-                            Text(_isScanning ? 'Scanning...' : 'Ready',
-                                style: const TextStyle(color: Colors.white)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
+
+                      const SizedBox(height: 30),
+
+                      // Bagian progress bawah
                       LinearProgressIndicator(
                         value: _nfcController.value,
                         backgroundColor: Colors.white.withOpacity(0.2),
@@ -423,13 +439,15 @@ class _DashboardawalState extends State<Dashboardawal>
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
+          );
+        },
+      );
+    },
+  );
+}
+
 
   double _parseFlazzBalance(dynamic tagData) {
     final randomBalance =
@@ -567,6 +585,7 @@ class _DashboardawalState extends State<Dashboardawal>
         ),
         child: SafeArea(
           child: SingleChildScrollView(
+            
             physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
@@ -592,12 +611,15 @@ class _DashboardawalState extends State<Dashboardawal>
                           children: [
                             Text('Hai, Pengelola!',
                                 style: TextStyle(
-                                    color: Colors.white70, fontSize: 16)),
+                                    color: Colors.white70, fontSize: 16),overflow: TextOverflow.ellipsis,
+maxLines: 1,),
+                                    
                             Text('KeuanganKu',
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 24,
-                                    fontWeight: FontWeight.bold)),
+                                    fontWeight: FontWeight.bold),overflow: TextOverflow.ellipsis,
+maxLines: 1,),
                           ],
                         ),
                       ),
@@ -653,8 +675,9 @@ class _DashboardawalState extends State<Dashboardawal>
               children: [
                 Icon(Icons.trending_up, color: Colors.teal, size: 20),
                 SizedBox(width: 8),
-                Text('Total Saldo',
-                    style: TextStyle(color: Colors.white70, fontSize: 16)),
+                 Expanded(
+            child:Text('Total Saldo',
+                    style: TextStyle(color: Colors.white70, fontSize: 16)),)
               ],
             ),
             const SizedBox(height: 16),
@@ -723,90 +746,147 @@ class _DashboardawalState extends State<Dashboardawal>
     );
   }
 
-  Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildActionButton(
-              icon: Icons.nfc,
-              label: 'Scan\nFlazz',
-              color: Colors.teal,
-              onTap: _isScanning ? null : _scanFlazzBalance,
+ Widget _buildActionButtons() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        // Ambil lebar layar saat ini
+        double screenWidth = constraints.maxWidth;
+
+        // Jika layar kecil (misalnya < 360), tampil vertikal
+        bool isSmallScreen = screenWidth < 360;
+
+        if (isSmallScreen) {
+          // --- layout column (tombol di bawah satu sama lain)
+          return Column(
+  children: [
+    SizedBox(
+      width: double.infinity, // <-- tambahkan ini
+      child: _buildActionButton(
+        icon: Icons.nfc,
+        label: 'Scan\nFlazz',
+        color: Colors.teal,
+        onTap: _isScanning ? null : _scanFlazzBalance,
+      ),
+    ),
+    const SizedBox(height: 16),
+    SizedBox(
+      width: double.infinity, // <-- tambahkan ini juga
+      child: _buildActionButton(
+        icon: Icons.add_circle_outline,
+        label: 'Tambah\nTransaksi',
+        color: Colors.blue,
+        onTap: () async {
+          final newTransaction = await Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const AddTransactionScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) =>
+                      FadeTransition(opacity: animation, child: child),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: _buildActionButton(
-              icon: Icons.add_circle_outline,
-              label: 'Tambah\nTransaksi',
-              color: Colors.blue,
-              onTap: () async {
-                final newTransaction = await Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const AddTransactionScreen(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
+          );
+          if (newTransaction != null) await _addTransaction(newTransaction);
+        },
+      ),
+    ),
+  ],
+);
+
+        } else {
+          // --- layout row (dua tombol sejajar)
+          return Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.nfc,
+                  label: 'Scan\nFlazz',
+                  color: Colors.teal,
+                  onTap: _isScanning ? null : _scanFlazzBalance,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.add_circle_outline,
+                  label: 'Tambah\nTransaksi',
+                  color: Colors.blue,
+                  onTap: () async {
+                    final newTransaction = await Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const AddTransactionScreen(),
+                        transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) =>
                             FadeTransition(opacity: animation, child: child),
-                  ),
-                );
-                if (newTransaction != null)
-                  await _addTransaction(newTransaction);
-              },
+                      ),
+                    );
+                    if (newTransaction != null)
+                      await _addTransaction(newTransaction);
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    ),
+  );
+}
+
+  Widget _buildActionButton({
+  required IconData icon,
+  required String label,
+  required Color color,
+  required VoidCallback? onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      height: 80,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: onTap == null
+              ? [Colors.grey, Colors.grey[800]!]
+              : [color, color.withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: (onTap == null ? Colors.grey : color).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          )
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 80,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: onTap == null
-                  ? [Colors.grey, Colors.grey[800]!]
-                  : [color, color.withOpacity(0.8)]),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: (onTap == null ? Colors.grey : color).withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8))
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const SizedBox(height: 4),
-            Text(label,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildTransactionsCard() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -836,11 +916,12 @@ class _DashboardawalState extends State<Dashboardawal>
                         const Icon(Icons.history, color: Colors.teal, size: 20),
                   ),
                   const SizedBox(width: 12),
-                  const Text('Transaksi Terbaru',
+                  const Expanded(
+                  child: Text('Transaksi Terbaru',
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+                          color: Colors.white)),)
                 ],
               ),
               const SizedBox(height: 16),
@@ -866,9 +947,8 @@ class _DashboardawalState extends State<Dashboardawal>
                   ),
                 )
               else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                ListView.separated( physics: const BouncingScrollPhysics(),
+    shrinkWrap: true,
                   itemCount: transactions.length > 5 ? 5 : transactions.length,
                   separatorBuilder: (context, index) => Container(
                       height: 1, color: Colors.white.withOpacity(0.1)),
@@ -883,48 +963,126 @@ class _DashboardawalState extends State<Dashboardawal>
   }
 
   Widget _buildTransactionTile(Map<String, dynamic> transaction) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: transaction['isIncome']
-                  ? Colors.teal.withOpacity(0.2)
-                  : Colors.red.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              transaction['isIncome']
-                  ? Icons.arrow_upward
-                  : Icons.arrow_downward,
-              color: transaction['isIncome'] ? Colors.teal : Colors.red,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(transaction['title'],
-                    style: const TextStyle(color: Colors.white, fontSize: 16)),
-                Text('${transaction['category']} • ${transaction['date']}',
-                    style: TextStyle(color: Colors.white70, fontSize: 12)),
-              ],
-            ),
-          ),
-          Text(
-            '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
-            style: TextStyle(
-              color: transaction['isIncome'] ? Colors.teal : Colors.red,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      // Kalau lebar < 400 px (misalnya HP kecil), ubah jadi Column
+      bool isSmallScreen = constraints.maxWidth < 400;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: isSmallScreen
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: transaction['isIncome']
+                              ? Colors.teal.withOpacity(0.2)
+                              : Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          transaction['isIncome']
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: transaction['isIncome']
+                              ? Colors.teal
+                              : Colors.red,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(transaction['title'],
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                                overflow: TextOverflow.ellipsis),
+                            Text(
+                              '${transaction['category']} • ${transaction['date']}',
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
+                    style: TextStyle(
+                      color: transaction['isIncome']
+                          ? Colors.teal
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: transaction['isIncome']
+                          ? Colors.teal.withOpacity(0.2)
+                          : Colors.red.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      transaction['isIncome']
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                      color: transaction['isIncome']
+                          ? Colors.teal
+                          : Colors.red,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(transaction['title'],
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 16),
+                            overflow: TextOverflow.ellipsis),
+                        Text(
+                          '${transaction['category']} • ${transaction['date']}',
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                     Expanded(child:   Text(
+                    '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
+                    style: TextStyle(
+                      color: transaction['isIncome']
+                          ? Colors.teal
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                  ),)
+                ],
+              ),
+      );
+    },
+  );
 }
+    }
