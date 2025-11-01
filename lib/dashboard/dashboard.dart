@@ -697,7 +697,7 @@ maxLines: 1,),
                           offset: Offset(2, 2),
                           blurRadius: 4)
                     ],
-                  ),
+                  ),  overflow: TextOverflow.ellipsis,
                 );
               },
             ),
@@ -714,7 +714,7 @@ maxLines: 1,),
       children: [
         Expanded(
             child: _buildStatCard(
-                Icons.arrow_upward, 'Pemasukan', income, Colors.teal)),
+                Icons.arrow_upward, 'Pemasukan', income, Colors.teal),),
         const SizedBox(width: 16),
         Expanded(
             child: _buildStatCard(
@@ -739,8 +739,8 @@ maxLines: 1,),
           const SizedBox(height: 4),
           Text('Rp ${NumberFormat('#,###').format(amount.round())}',
               style: TextStyle(
-                  color: color, fontSize: 14, fontWeight: FontWeight.bold)),
-          Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  color: color, fontSize: 14, fontWeight: FontWeight.bold),    overflow: TextOverflow.ellipsis,),
+          Text(label, style: TextStyle(color: Colors.white70, fontSize: 12),    overflow: TextOverflow.ellipsis,),
         ],
       ),
     );
@@ -1023,7 +1023,7 @@ maxLines: 1,),
                           : Colors.red,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                    ),
+                    ),    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               )

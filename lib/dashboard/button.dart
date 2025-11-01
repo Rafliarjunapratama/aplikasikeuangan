@@ -19,8 +19,8 @@
     // daftar halaman yang ingin ditampilkan
     final List<Widget> _pages = [
       const Dashboardawal(),
-      const CategoriesPage(), // ganti dengan StatistikScreen()
-      const StatsPage(), // ganti dengan KategoriScreen()
+      const StatsPage(), 
+      const CategoriesPage(), 
       const ScanReceiptScreen(),
       const InfoPage(), // ganti dengan ScanScreen()
     ];

@@ -88,8 +88,7 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
                       const SizedBox(height: 24),
                       _buildDonutChartCard(),
                       const SizedBox(height: 24),
-                      _buildBarChartCard(),
-                      const SizedBox(height: 24),
+                     
                       _buildRecentTransactions(),
                     ],
                   ),
@@ -152,7 +151,7 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Analytics',
-                  style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  style: TextStyle(color: Colors.white70, fontSize: 16),overflow: TextOverflow.ellipsis,),
               Text('Statistik Keuangan',
                   style: TextStyle(
                       color: Colors.white,
@@ -164,6 +163,8 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
       ],
     );
   }
+
+  
 
   Widget _buildOverviewCard() {
   final balance = income - expense;
@@ -364,137 +365,7 @@ class _StatsPageState extends State<StatsPage> with TickerProviderStateMixin {
     ];
   }
 
-  Widget _buildBarChartCard() {
-    if (_lastSixTransactions.isEmpty) {
-      return _buildEmptyChart('Belum ada transaksi', Icons.receipt_long);
-    }
-    return AnimatedBuilder(
-      animation: _chartAnimation,
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Colors.white.withOpacity(0.05), Colors.transparent]),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20)
-            ],
-          ),
-          child: Column(
-            children: [
-              const Text('Transaksi Terakhir',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: 200,
-                child: BarChart(
-                  BarChartData(
-                    alignment: BarChartAlignment.spaceAround,
-                    maxY: _computeMaxY(),
-                    barTouchData: BarTouchData(
-                      enabled: true,
-                      touchTooltipData: BarTouchTooltipData(
-                        tooltipPadding: const EdgeInsets.all(8),
-                        tooltipMargin: 8,
-                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                          final amount =
-                              _lastSixTransactions[groupIndex]['amount'];
-                          return BarTooltipItem(
-                            'Rp ${NumberFormat('#,###').format(amount)}',
-                            const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              backgroundColor: Colors.teal,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    titlesData: FlTitlesData(
-                      show: true,
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 40,
-                          getTitlesWidget: (value, meta) => Text(
-                            NumberFormat.compact().format(value),
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        ),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: (value, meta) {
-                            if (value < 0 ||
-                                value >= _lastSixTransactions.length) {
-                              return const SizedBox();
-                            }
-
-                            final rawDate =
-                                _lastSixTransactions[value.toInt()]['date'];
-
-                            late DateTime date;
-                            if (rawDate is String) {
-                              try {
-                                date = DateFormat("d MMM yyyy", "id_ID")
-                                    .parse(rawDate);
-                              } catch (_) {
-                                date = DateTime.now();
-                              }
-                            } else {
-                              date = rawDate as DateTime;
-                            }
-
-                            return Text(
-                              DateFormat.MMMd('id_ID').format(date),
-                              style: const TextStyle(fontSize: 10),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    gridData: const FlGridData(show: false),
-                    borderData: FlBorderData(show: false),
-                    barGroups:
-                        _lastSixTransactions.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final data = entry.value;
-                      return BarChartGroupData(
-                        x: index,
-                        barRods: [
-                          BarChartRodData(
-                            toY: data['amount'].toDouble(),
-                            color: Colors.teal,
-                            width: 18,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                  swapAnimationDuration: const Duration(milliseconds: 700),
-                  swapAnimationCurve: Curves.easeInOut,
-                ),
-              )
-            ],
-          ),
-        );
-      },
-    );
-  }
+ 
 
   Widget _buildEmptyChart(String text, IconData icon) {
     return Container(

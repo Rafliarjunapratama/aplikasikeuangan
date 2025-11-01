@@ -180,6 +180,44 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildAnimatedHeader(),
+                            const SizedBox(height: 20),
+                            Align(
+          alignment: Alignment.centerLeft,
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: buttonColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: buttonColor.withOpacity(0.4)),
+                boxShadow: [
+                  BoxShadow(
+                    color: buttonColor.withOpacity(0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.arrow_back_ios_new_rounded,
+                      color: buttonColor, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Kembali',
+                    style: TextStyle(
+                      color: buttonColor,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
                             const SizedBox(height: 30),
                             _buildAnimatedToggleSection(buttonColor),
                             const SizedBox(height: 30),
@@ -235,6 +273,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       ),
     );
   }
+
+  
 
   // --- ANIMASI BUILDER ---
   Widget _buildAnimatedHeader() {
@@ -386,87 +426,102 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       ),
       child: Column(
         children: [
+          
+          const SizedBox(height: 8),
           const Text('Jenis Transaksi',
               style: TextStyle(color: Colors.white70, fontSize: 16)),
           const SizedBox(height: 16),
           Stack(
-            alignment: Alignment.topLeft,
-            children: [
-              Container(
-                width: double.infinity,
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: LinearGradient(colors: [
+  alignment: Alignment.topLeft,
+  children: [
+    LayoutBuilder(
+      builder: (context, constraints) {
+        final halfWidth = constraints.maxWidth / 2; // lebar separuh
+        return Stack(
+          alignment: Alignment.topLeft,
+          children: [
+            Container(
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                gradient: LinearGradient(
+                  colors: [
                     Colors.grey.withOpacity(0.3),
                     Colors.transparent
-                  ]),
+                  ],
                 ),
               ),
-              AnimatedBuilder(
-                animation: _toggleAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(140 * _toggleAnimation.value, 0),
+            ),
+            AnimatedBuilder(
+              animation: _toggleAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(halfWidth * _toggleAnimation.value, 0),
+                  child: Container(
+                    width: halfWidth, // otomatis setengah dari total
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [
+                        buttonColor.withOpacity(0.2),
+                        Colors.transparent
+                      ]),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: buttonColor.withOpacity(0.5)),
+                    ),
+                  ),
+                );
+              },
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _onToggleChanged(false),
                     child: Container(
-                      width: 140,
                       height: 60,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          buttonColor.withOpacity(0.2),
-                          Colors.transparent
-                        ]),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: buttonColor.withOpacity(0.5)),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _onToggleChanged(false),
-                      child: Container(
-                        height: 60,
-                        color: Colors.transparent,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.arrow_downward,
-                                color: Colors.red, size: 24),
-                            SizedBox(height: 4),
-                            Text('Pengeluaran',
-                                style: TextStyle(color: Colors.white70)),
-                          ],
-                        ),
+                      color: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.arrow_downward,
+                              color: Colors.red, size: 24),
+                          SizedBox(height: 4),
+                          Text('Pengeluaran',
+                              style: TextStyle(color: Colors.white70)),
+                        ],
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _onToggleChanged(true),
-                      child: Container(
-                        height: 60,
-                        color: Colors.transparent,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.arrow_upward,
-                                color: Colors.green, size: 24),
-                            SizedBox(height: 4),
-                            Text('Pemasukan',
-                                style: TextStyle(color: Colors.white70)),
-                          ],
-                        ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _onToggleChanged(true),
+                    child: Container(
+                      height: 60,
+                      color: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.arrow_upward,
+                              color: Colors.green, size: 24),
+                          SizedBox(height: 4),
+                          Text('Pemasukan',
+                              style: TextStyle(color: Colors.white70)),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    ),
+  ],
+),
+
         ],
       ),
     );
@@ -561,8 +616,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
           children: [
             const Icon(Icons.date_range_outlined, color: Colors.teal),
             const SizedBox(width: 16),
-            Text(formattedDate,
-                style: const TextStyle(color: Colors.white, fontSize: 16)),
+             Flexible(
+      child: Text(formattedDate,
+                style: const TextStyle(color: Colors.white, fontSize: 16),  overflow: TextOverflow.ellipsis, // ✅ teks panjang jadi '…'
+        maxLines: 1,)),
             const Spacer(),
             const Icon(Icons.arrow_drop_down, color: Colors.teal),
           ],
