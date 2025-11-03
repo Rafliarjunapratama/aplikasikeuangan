@@ -279,6 +279,11 @@ Distributed under the MIT License. See `LICENSE` for more information.
 Jika Anda menemukan bug atau memiliki saran, silakan buat [issue](https://github.com/Rafliarjunapratama/aplikasikeuangan/issues) di repository ini.
 
 ---
+## 📥 Unduh Aplikasi
+
+download mentahan aplikasi dan cobakan sendiri silahkan [download !](https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/aplikasi/kauangan.apk)
+
+---
 
 <div align="center">
   <p>Made with ❤️ by <a href="https://github.com/Rafliarjunapratama">Muhamad Rafli Arjuna Pratama</a></p>
