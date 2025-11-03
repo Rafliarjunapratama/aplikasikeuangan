@@ -51,9 +51,9 @@
 <div align="center">
   <table>
     <tr>
-      <td><img src="screenshots/onboarding.png" width="200" alt="Onboarding"></td>
-      <td><img src="screenshots/dashboard.png" width="200" alt="Dashboard"></td>
-      <td><img src="screenshots/stats.png" width="200" alt="Statistics"></td>
+      <td><img src="https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/gambargithub/Screenshot%202025-11-03%20211743.png" width="200" alt="Onboarding"></td>
+      <td><img src="https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/gambargithub/Screenshot%202025-11-03%20211832.png" width="200" alt="Dashboard"></td>
+      <td><img src="https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/gambargithub/Screenshot%202025-11-03%20211839.png" width="200" alt="Statistics"></td>
     </tr>
     <tr>
       <td align="center"><b>Onboarding</b></td>
@@ -61,9 +61,9 @@
       <td align="center"><b>Statistics</b></td>
     </tr>
     <tr>
-      <td><img src="screenshots/categories.png" width="200" alt="Categories"></td>
-      <td><img src="screenshots/scan.png" width="200" alt="OCR Scanner"></td>
-      <td><img src="screenshots/add-transaction.png" width="200" alt="Add Transaction"></td>
+      <td><img src="https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/gambargithub/Screenshot%202025-11-03%20211847.png" width="200" alt="Categories"></td>
+      <td><img src="https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/gambargithub/Screenshot%202025-11-03%20211856.png" width="200" alt="OCR Scanner"></td>
+      <td><img src="https://github.com/Rafliarjunapratama/aplikasikeuangan/blob/main/gambargithub/Screenshot%202025-11-03%20211922.png" width="200" alt="Add Transaction"></td>
     </tr>
     <tr>
       <td align="center"><b>Categories</b></td>
