@@ -267,57 +267,111 @@ class _DashboardawalState extends State<Dashboardawal>
   }
 
   // ===== NFC FLAZZ SCANNER - PREMIUM VERSION =====
+// ===== NFC FLAZZ SCANNER - PREMIUM VERSION =====
   Future<void> _scanFlazzBalance() async {
-  if (_isScanning) return;
+    if (_isScanning) return;
 
-  HapticFeedback.heavyImpact();
-  setState(() => _isScanning = true);
-
-  _nfcController.repeat();
-  _showNfcScannerDialog();
-
-  try {
-    final tag = await FlutterNfcKit.poll(timeout: const Duration(seconds: 10));
-
-    if (tag.type == NFCTagType.iso7816) {
-      final cardId = tag.id;
-      setState(() => _cardId = cardId);
-
-      final response = await FlutterNfcKit.transceive('00B0950000');
-      final detectedBalance = _parseFlazzBalance(response);
-
-      // Berhenti animasi & tampilkan sukses
-      _nfcController.stop();
-      await _successController.forward();
-
-      setState(() {
-        totalBalance = detectedBalance;
-        income = detectedBalance;
-        expense = 0;
-        _scanSuccess = true;
-      });
-
-      await _autoSaveFlazzTransaction(detectedBalance, cardId);
-      _balanceController.forward(from: 0);
-
-      if (Navigator.canPop(context)) Navigator.of(context).pop(); // tutup NFC dialog
-      _showSuccessSnackbar(detectedBalance);
-    } else {
-      throw Exception('Kartu bukan Flazz BCA');
+    // ✅ Cek ketersediaan NFC di luar blok try
+    // Ini penting agar FlutterNfcKit.finish() tidak dipanggil jika NFC tidak tersedia
+    NFCAvailability availability;
+    try {
+      availability = await FlutterNfcKit.nfcAvailability;
+    } catch (e) {
+      _showErrorDialog(
+          "Tidak dapat mengecek fitur NFC pada perangkat ini.\n\nPastikan HP Anda mendukung NFC.");
+      return;
     }
-  } catch (e) {
-    // Jika error, pastikan animasi berhenti dan dialog ditutup dulu
-    _nfcController.stop();
-    if (Navigator.canPop(context)) Navigator.of(context).pop();
 
-    // Tampilkan pesan error
-    _showErrorDialog(e.toString());
-  } finally {
-    if (mounted) setState(() => _isScanning = false);
-    await FlutterNfcKit.finish();
+    if (availability != NFCAvailability.available) {
+      String message;
+
+      if (availability == NFCAvailability.disabled) {
+        message =
+            "NFC sedang dimatikan.\n\nSilakan aktifkan NFC di pengaturan HP Anda terlebih dahulu, lalu coba lagi.";
+      } else if (availability == NFCAvailability.not_supported) {
+        message =
+            "HP Anda tidak mendukung fitur NFC.\n\nFitur scan Flazz hanya dapat digunakan pada perangkat yang memiliki NFC.";
+      } else {
+        message =
+            "NFC tidak tersedia.\n\nPastikan HP Anda mendukung dan telah mengaktifkan NFC.";
+      }
+
+      _showErrorDialog(message);
+      return;
+    }
+
+    // ✅ NFC tersedia, lanjutkan dengan scanning
+    bool nfcSessionStarted = false;
+
+    try {
+      HapticFeedback.heavyImpact();
+      setState(() => _isScanning = true);
+
+      _nfcController.repeat();
+      _showNfcScannerDialog();
+
+      final tag =
+          await FlutterNfcKit.poll(timeout: const Duration(seconds: 10));
+      nfcSessionStarted = true; // Tandai bahwa sesi NFC sudah dimulai
+
+      if (tag.type == NFCTagType.iso7816) {
+        final cardId = tag.id;
+        setState(() => _cardId = cardId);
+
+        final response = await FlutterNfcKit.transceive('00B0950000');
+        final detectedBalance = _parseFlazzBalance(response);
+
+        _nfcController.stop();
+        await _successController.forward();
+
+        setState(() {
+          totalBalance = detectedBalance;
+          income = detectedBalance;
+          expense = 0;
+          _scanSuccess = true;
+        });
+
+        await _autoSaveFlazzTransaction(detectedBalance, cardId);
+        _balanceController.forward(from: 0);
+
+        if (Navigator.canPop(context)) Navigator.of(context).pop();
+        _showSuccessSnackbar(detectedBalance);
+      } else {
+        throw Exception('Kartu yang ditempel bukan kartu Flazz BCA.');
+      }
+    } on PlatformException catch (e) {
+      // ✅ Tangani error dari plugin NFC
+      _nfcController.stop();
+      if (Navigator.canPop(context)) Navigator.of(context).pop();
+
+      String message;
+      if (e.code == '404') {
+        message =
+            "NFC tidak tersedia atau sedang dimatikan.\n\nSilakan pastikan fitur NFC aktif di pengaturan HP Anda.";
+      } else {
+        message =
+            "Terjadi kesalahan saat membaca kartu.\n\nSilakan coba lagi atau pastikan kartu Flazz Anda berada dekat dengan HP.";
+      }
+      _showErrorDialog(message);
+    } catch (e) {
+      // ✅ Tangani error umum lain
+      _nfcController.stop();
+      if (Navigator.canPop(context)) Navigator.of(context).pop();
+      _showErrorDialog(
+          "Gagal membaca kartu.\n\nPastikan kartu yang Anda tempelkan adalah kartu Flazz BCA.");
+    } finally {
+      if (mounted) setState(() => _isScanning = false);
+
+      // ✅ Hanya panggil finish() jika sesi NFC benar-benar dimulai
+      if (nfcSessionStarted) {
+        try {
+          await FlutterNfcKit.finish();
+        } catch (e) {
+          // Abaikan error saat finish, ini hanya cleanup
+        }
+      }
+    }
   }
-}
-
   void _showNfcScannerDialog() {
   showDialog(
     context: context,
@@ -962,127 +1016,53 @@ maxLines: 1,),
     );
   }
 
-  Widget _buildTransactionTile(Map<String, dynamic> transaction) {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      // Kalau lebar < 400 px (misalnya HP kecil), ubah jadi Column
-      bool isSmallScreen = constraints.maxWidth < 400;
+  Widget _buildTransactionTile(Map<String, dynamic> tx) {
+    final isIncome = tx['isIncome'] ?? false;
+    final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
+    final color = isIncome ? Colors.teal : Colors.redAccent;
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: isSmallScreen
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: transaction['isIncome']
-                              ? Colors.teal.withOpacity(0.2)
-                              : Colors.red.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          transaction['isIncome']
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          color: transaction['isIncome']
-                              ? Colors.teal
-                              : Colors.red,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(transaction['title'],
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                                overflow: TextOverflow.ellipsis),
-                            Text(
-                              '${transaction['category']} • ${transaction['date']}',
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
-                    style: TextStyle(
-                      color: transaction['isIncome']
-                          ? Colors.teal
-                          : Colors.red,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: transaction['isIncome']
-                          ? Colors.teal.withOpacity(0.2)
-                          : Colors.red.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      transaction['isIncome']
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      color: transaction['isIncome']
-                          ? Colors.teal
-                          : Colors.red,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(transaction['title'],
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 16),
-                            overflow: TextOverflow.ellipsis),
-                        Text(
-                          '${transaction['category']} • ${transaction['date']}',
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                     Expanded(child:   Text(
-                    '${transaction['isIncome'] ? '+' : '-'} Rp ${NumberFormat('#,###').format(transaction['amount'])}',
-                    style: TextStyle(
-                      color: transaction['isIncome']
-                          ? Colors.teal
-                          : Colors.red,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.end,
-                    overflow: TextOverflow.ellipsis,
-                  ),)
-                ],
-              ),
-      );
-    },
-  );
-}
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.2),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(
+        tx['title'] ?? 'Tanpa Judul',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        '${tx['category'] ?? ''} • ${tx['date'] ?? ''}',
+        style: const TextStyle(color: Colors.white54, fontSize: 13),
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: SizedBox(
+  width: 100, // batasi lebar maksimum
+  child: FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: Alignment.centerRight,
+    child: Text(
+      (isIncome ? '+ ' : '- ') +
+          'Rp ${NumberFormat('#,###').format(tx['amount'] ?? 0)}',
+      style: TextStyle(
+        color: color,
+        fontWeight: FontWeight.bold,
+        fontSize: 15,
+      ),
+    ),
+  ),
+),
+
+    );
+  }
+
     }
