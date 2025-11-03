@@ -258,7 +258,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 👨‍💻 Developer
 
 <div align="center">
-  <img src="https://avatars.githubusercontent.com/u/YOUR_GITHUB_ID" width="100" style="border-radius: 50%">
+  <img src="https://avatars.githubusercontent.com/u/130772818" width="100" style="border-radius: 50%">
   <h3>Muhamad Rafli Arjuna Pratama</h3>
   <p>Flutter Developer</p>
   
@@ -276,7 +276,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 💬 Support
 
-Jika Anda menemukan bug atau memiliki saran, silakan buat [issue](https://github.com/Rafliarjunapratama/keuanganku/issues) di repository ini.
+Jika Anda menemukan bug atau memiliki saran, silakan buat [issue](https://github.com/Rafliarjunapratama/aplikasikeuangan/issues) di repository ini.
 
 ---
 
